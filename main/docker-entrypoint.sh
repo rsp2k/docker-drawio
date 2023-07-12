@@ -101,6 +101,32 @@ else
     echo -n "${DRAWIO_GITLAB_SECRET}" > $CATALINA_HOME/webapps/draw/WEB-INF/gitlab_client_secret
 fi
 
+#Github
+if [[ -z "${DRAWIO_GITHUB_ID}" ]]; then
+    echo "urlParams['gh'] = '0'; //Github"  >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+else
+    #Github url and id for the editor
+    echo "window.DRAWIO_GITHUB_URL = '${DRAWIO_GITHUB_URL}'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+    echo "window.DRAWIO_GITHUB_ID = '${DRAWIO_GITHUB_ID}'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+
+    #Github server flow auth (since 14.6.7)
+    echo -n "${DRAWIO_GITHUB_URL}/oauth/token" > $CATALINA_HOME/webapps/draw/WEB-INF/github_auth_url
+    echo -n "${DRAWIO_GITHUB_ID}" > $CATALINA_HOME/webapps/draw/WEB-INF/github_client_id
+    echo -n "${DRAWIO_GITLAB_SECRET}" > $CATALINA_HOME/webapps/draw/WEB-INF/github_client_secret
+fi
+cat $CATALINA_HOME/webapps/draw/js/PreConfig.js
+
+#Dropbox
+if [[ -z "${DRAWIO_DROPBOX_ID}" ]]; then
+    echo "urlParams['db'] = '0'; //Dropbox"  >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+else
+    #Dropbox id for the editor
+    echo "window.DRAWIO_DROPBOX_ID = '${DRAWIO_DROPBOX_ID}'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+
+    #Dropbox server flow auth (since 14.6.7)
+    echo -n "${DRAWIO_DROPBOX_ID}" > $CATALINA_HOME/webapps/draw/WEB-INF/dropbox_client_id
+    echo -n "${DRAWIO_DROPBOX_SECRET}" > $CATALINA_HOME/webapps/draw/WEB-INF/dropbox_client_secret
+fi
 cat $CATALINA_HOME/webapps/draw/js/PreConfig.js
 
 echo "Init PostConfig.js"
@@ -149,7 +175,7 @@ if ! [ -f $CATALINA_HOME/.keystore ] && [ "$LETS_ENCRYPT_ENABLED" == "false" ]; 
     keytool -list -keystore $CATALINA_HOME/.keystore -v -storepass "${KEYSTORE_PASS}"
 fi
 
-# Update SSL port configuration if it does'nt exists
+# Update SSL port configuration if it doesn't exist
 #
 UUID="$(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w 1 | head -n 1)$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 7 | head -n 1)"
 VAR=$(cat conf/server.xml | grep "$CATALINA_HOME/.keystore")
